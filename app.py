@@ -4,6 +4,7 @@ import asyncio
 import time
 import requests
 import tempfile
+
 from typing import List, Dict, Any
 from concurrent.futures import ThreadPoolExecutor
 from fastapi import FastAPI, HTTPException, Depends, Header
@@ -22,7 +23,9 @@ load_dotenv()
 
 # --- Configuration & Initialization ---
 PINECONE_INDEX_NAME = "bajaj-hackathon-index"
-API_KEY = os.getenv("API_KEY", "your-secret-api-key-here")  # Set your API key
+API_KEY = os.getenv("API_KEY", "19e81faf676a07a784566f941736d52aed72fb3291285a6bd6dd91b681d442a0")  # Set your API key
+
+
 
 # Initialize FastAPI app
 app = FastAPI(
@@ -42,15 +45,18 @@ class QuestionRequest(BaseModel):
 class QuestionResponse(BaseModel):
     answers: List[str]
 
-# --- Authentication Function ---
+# --- Authentication Functions ---
 async def verify_api_key(credentials: HTTPAuthorizationCredentials = Depends(security)):
     """Verify the API key from the Authorization header."""
-    if credentials.credentials != API_KEY:
+    api_key = credentials.credentials
+    print(f"Received API key: {api_key}")
+    print(f"Expected API key: {API_KEY}")
+    if api_key != API_KEY:
         raise HTTPException(
             status_code=401,
             detail="Invalid API key"
         )
-    return credentials.credentials
+    return api_key
 
 # --- RAG System Class ---
 class OptimizedRAGSystem:
@@ -58,7 +64,7 @@ class OptimizedRAGSystem:
         """Initialize the RAG system with optimized configurations."""
         # Use faster model with optimized settings
         self.llm = ChatGoogleGenerativeAI(
-            model="gemini-2.5-flash", 
+            model="gemini-2.5-flash-lite", 
             temperature=0,
             google_api_key=os.getenv("GOOGLE_API_KEY"),
             max_output_tokens=2048,
@@ -209,8 +215,8 @@ def process_document(file_path: str):
 # --- API Endpoints ---
 @app.post("/hackrx/run", response_model=QuestionResponse)
 async def run_questions(
-    request: QuestionRequest
-    # api_key: str = Depends(verify_api_key)  # Commented out for testing
+    request: QuestionRequest,
+    api_key: str = Depends(verify_api_key)
 ):
     """
     Process insurance policy questions and return answers.
@@ -265,7 +271,7 @@ async def root():
         "message": "Bajaj Hackathon RAG API",
         "version": "1.0.0",
         "endpoints": {
-            "POST /hackrx/run": "Process insurance policy questions",
+            "POST /hackrx/run": "Process insurance policy questions (requires Authorization: Bearer <api_key>)",
             "GET /health": "Health check",
             "GET /": "API information"
         }

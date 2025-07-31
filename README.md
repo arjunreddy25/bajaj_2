@@ -30,10 +30,15 @@ cp .env.example .env
 Fill in your API keys:
 
 ```env
+# External APIs (you need these)
 GOOGLE_API_KEY=your_google_api_key_here
 PINECONE_API_KEY=your_pinecone_api_key_here
-API_KEY=your-secret-api-key-here
+
+# Application API Key (this is the API key users will use)
+API_KEY=19e81faf676a07a784566f941736d52aed72fb3291285a6bd6dd91b681d442a0
 ```
+
+**Important:** Users will use the API key `19e81faf676a07a784566f941736d52aed72fb3291285a6bd6dd91b681d442a0` to authenticate and get bearer tokens.
 
 ### 3. Run the Application
 
@@ -47,7 +52,7 @@ The API will be available at `http://localhost:8000`
 
 ### Main Endpoint: POST `/hackrx/run`
 
-**Authentication:** Bearer token required
+**Authentication:** `Authorization: Bearer <api_key>` header required
 
 **Request Format:**
 ```json
@@ -99,7 +104,7 @@ The API will be available at `http://localhost:8000`
 ```bash
 curl -X POST "http://localhost:8000/hackrx/run" \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer your-secret-api-key-here" \
+  -H "Authorization: Bearer 19e81faf676a07a784566f941736d52aed72fb3291285a6bd6dd91b681d442a0" \
   -d '{
     "documents": "https://hackrx.blob.core.windows.net/assets/policy.pdf?sv=2023-01-03&st=2025-07-04T09%3A11%3A24Z&se=2027-07-05T09%3A11%3A00Z&sr=b&sp=r&sig=N4a9OU0w0QXO6AOIBiu4bpl7AXvEZogeT%2FjUHNO7HzQ%3D",
     "questions": [
@@ -118,7 +123,7 @@ import json
 url = "http://localhost:8000/hackrx/run"
 headers = {
     "Content-Type": "application/json",
-    "Authorization": "Bearer your-secret-api-key-here"
+    "Authorization": "Bearer 19e81faf676a07a784566f941736d52aed72fb3291285a6bd6dd91b681d442a0"
 }
 
 data = {
